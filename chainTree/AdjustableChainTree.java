@@ -110,7 +110,7 @@ public class AdjustableChainTree extends ChainTree {
 	 * Returns the indices of the bonds that are not locked.
 	 * @return A collection of indices of the bonds that are not locked.
 	 */
-    public Collection<Integer> rotateableBonds() {
+    public ArrayList<Integer> rotateableBonds() {
 		ArrayList<Integer> rotatableBonds = new ArrayList<Integer>();
 		
 		for (int i = 0, j = this.nodes.length; i < j; i++) { 
