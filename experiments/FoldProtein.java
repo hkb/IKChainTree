@@ -23,24 +23,26 @@ public class FoldProtein {
 		 * Setup
 		 */
 		String pdbId = "1PUX"; // specify the id of the protein to fold -- 1PUX good for IK
-		int targetOpacity = 20; // should the target be displayed
 		double errorTolerance = 0.01; // the error tolerance
 		
 		/*
 		 * Experiment
-		 */
-		// create the protein
-		Protein protein = new Protein(pdbId, 2, true);
-			
+		 */			
 		// setup protein to simulate
 		J3DScene scene = J3DScene.createJ3DSceneInFrame();
 		scene.setWindowTitle(pdbId + " - simulation");
 		
 		AdjustableChainTree cTree = new AdjustableChainTree(pdbId, scene);
-
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// copy target into the scene of the chain tree
-		ChainTree target = new AdjustableChainTree(pdbId, scene);
+		//new AdjustableChainTree(pdbId, scene);
 
 		// rum simulation
 		cTree.unfold();
@@ -69,7 +71,7 @@ public class FoldProtein {
 
 		
 		// Detect rotatable bonds.
-		ArrayList<Integer> rotatableBonds = new ArrayList<Integer>(cTree.rotateableBonds());
+		ArrayList<Integer> rotatableBonds = cTree.rotateableBonds();
 		int rotatableBondsLength = rotatableBonds.size();
 		
 		/*
