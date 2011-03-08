@@ -39,7 +39,7 @@ public class MinimizeRMSDExperiment {
 		//		String[] pdbs = new String[]{"1X5RA","1X0OA","1XDXA","1AKPA","1Y6DA"};
 		String[] pdbs = new String[]{"1X5RA"};
 		System.out.printf("Group peptide bonds: %b. Group SS: %b. Rebalance after grouping: %b\n",chaintreeConfig[0],chaintreeConfig[1],chaintreeConfig[2]);
-		for(int vol = 0; vol<=3;vol+=1){
+		for(int vol = 0; vol<3;vol+=1){
 			System.out.printf("%s\n",volumeName(vol));
 			for(String pdb: pdbs){
 				minimizeRMSD(true,pdb, vol, chaintreeConfig[0], chaintreeConfig[1], chaintreeConfig[2]);
@@ -125,6 +125,7 @@ public class MinimizeRMSDExperiment {
 		int b, N_V, N_P, N_U;
 		double angle, cost, newRmsd;
 		boolean clashing;
+		long experimentStart = System.currentTimeMillis();
 		while(itSinceImprove<200){
 			it++;
 //			System.out.println(it);
@@ -166,13 +167,10 @@ public class MinimizeRMSDExperiment {
 //			}
 
 			if(it%1000==0){//Write to console
-				System.err.printf("%s %s %s %d it: %d iit: %d rmsd: %.3f cost: %.3f clashing: %d\n",
-						pdbId,volumeName(volume),now("hh:mm:ss:SSSS"),System.currentTimeMillis(),it,iit,rmsd,cost,clashing?1:0);
-			}
-
-			
-			if(log && it%10000==0){//Write log to file
-				Toolbox.writeToFile(sb.toString(),logFileName,false);
+				String str = pdbId+" "+volumeName(volume)+" "+((System.currentTimeMillis()-experimentStart)/1000)+" it: "+it+" iit: "+iit+" rmsd: "+rmsd+" cost: "+cost+" clashing: "+clashing+"\n";
+				System.err.printf(str);
+				sb.append(str);
+				//cTree.repaint();
 			}
 
 			if(clashing){
@@ -186,6 +184,7 @@ public class MinimizeRMSDExperiment {
 					iit++;//Improving iteration
 					rmsd = newRmsd;
 					itSinceImprove = 0;
+					cTree.repaint();
 				}else{
 					cTree.changeRotationAngle(b, -angle);
 					itSinceImprove++;
@@ -193,10 +192,11 @@ public class MinimizeRMSDExperiment {
 			}
 		}
 		//		cTree.initPaint();
-		if(log){
+		if(true || log){
 			Toolbox.writeToFile(sb.toString(),logFileName,false);
 			System.out.println("Simulation done. Wrote log to "+logFileName);
 		}
+		cTree.repaint();
 		return cTree;
 	}
 

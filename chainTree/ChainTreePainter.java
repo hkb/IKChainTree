@@ -40,8 +40,8 @@ public class ChainTreePainter {
 		for (int i = 2; i < cTree.nodes.length; i = i+3) cTree.nodes[i].isLocked = true;
 		cTree.nodes[cTree.nodes.length-1].isLocked = true;
 		cTree.nodes[0].isLocked = true;
-		cTree.lockAlphaHelices(groupSS, false);
-		cTree.lockBetaStrands(groupSS,false);
+		cTree.lockAlphaHelices(groupSS);
+		cTree.lockBetaStrands(groupSS);
 		if(rebalance) cTree.naiveRebalance2();
 //		try{
 //		}catch(CTNode.NodeException exc){

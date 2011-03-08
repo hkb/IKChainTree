@@ -50,7 +50,6 @@ import geom3d.Sphere3d;
 import geom3d.Tetrahedron;
 import geom3d.Triangle3d;
 import geom3d.Vector3d;
-
 /** A graphics class for viewing scenes using Java3D. 
  * All the <code>Shape</code>-subclasses specified in the <code>edu.geom3D</code> 
  * package can be added to a <code>J3DScene</code> object and are automatically 
@@ -127,13 +126,20 @@ public class J3DScene {
 	public void setBackgroundColor(Color c){
 		background.setColor(c.getRed()/255f, c.getGreen()/255f, c.getBlue()/255f);
 	}
+	
+	/**
+	 * Set the window title.
+	 * @param title
+	 */
+	public void setWindowTitle(String title) {
+		frame.setTitle(title);
+	}
 
 	/** Removes one volume from the scene. */
 	public void removeShape(Shape3d v){
 		primitives.remove(v);
 		BranchGroup bg = shapeTransforms.remove(v);
 		scene.removeChild(bg);
-
 	}
 
 	/** Remove all volumes from the scene. */
@@ -142,6 +148,10 @@ public class J3DScene {
 			removeShape(primitives.entrySet().iterator().next().getKey());
 		primitives.clear();
 		shapeTransforms.clear();
+	}
+	
+	public Map<Shape3d,Color> getAllShapes() {
+		return primitives;
 	}
 
 	/** Add a volume object. The standard color gray will be used */

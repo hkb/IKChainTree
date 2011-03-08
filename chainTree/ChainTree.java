@@ -1,6 +1,7 @@
 package chainTree;
 
 import java.awt.Color;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -66,10 +67,13 @@ public class ChainTree {
 	private PointSet3d oxygenAtoms = new PointSet3d();
 	private PointSet3d hydrogenAtoms = new PointSet3d();
 	
+	private HashSet<Integer> alphaHelixNodes = new HashSet<Integer>();
+	private HashSet<Integer> betaSheetNodes = new HashSet<Integer>();
+	
 	public J3DScene j3dg;
 	BoundingVolumeManager volumeManager = new BoundingVolumeManager(this);
 	
-	public int clashDetectionMode = -1;     //-1 = no clash detection
+	public int clashDetectionMode = 1;     //-1 = no clash detection
 	                                        // 0 = after each single dihedral rotation
 											// 1 = after all n dihedral rotations
 	public  int boundingMode = 3;           // 0 = bounding volumes of 2 nested bounding volumes
@@ -217,8 +221,11 @@ public class ChainTree {
 			a = protein.getIndex(alphaHelix.getInitSeqNum());
 			b = protein.getIndex(alphaHelix.getEndSeqNum());
 		    System.out.println("Locking a-helix: a = " + a + ", b = " + b + " locking bonds [" + (3*a-2) + "," + (3*b-3) + "]");
-		   	if (regroup) regroup(3*a-2, 3*b-3);  
-		    else for (int k = 3*a-2; k <= 3*b-3; k++) nodes[k].isLocked = true; 
+		   	if (regroup) {
+		   		regroup(3*a-2, 3*b-3);
+		   		for (int i = 3*a-2; i<=3*b-3; i++) this.alphaHelixNodes.add(i);
+		   	}
+		    else for (int k = 3*a-2; k <= 3*b-3; k++) {nodes[k].isLocked = true;  this.alphaHelixNodes.add(k); }
 		}
 	}
 
@@ -229,8 +236,12 @@ public class ChainTree {
 				a = protein.getIndex(betaStrand.getInitSeqNum());
 				b = protein.getIndex(betaStrand.getEndSeqNum());
 				System.out.println("Locking b-strand: a = " + a + ", b = " + b + " locking bonds [" + (3*a-2) + "," + (3*b-3) + "]");
-				if (regroup) regroup(3*a-2, 3*b-3);  
-				else for (int k = 3*a-2; k <= 3*b-3; k++) nodes[k].isLocked = true;
+			   	if (regroup) {
+			   		regroup(3*a-2, 3*b-3);
+			   		for (int i = 3*a-2; i<=3*b-3; i++) this.betaSheetNodes.add(i);
+			   	}
+			    else for (int k = 3*a-2; k <= 3*b-3; k++) {nodes[k].isLocked = true;  this.betaSheetNodes.add(k); }
+
 			}
 		}
 
@@ -820,6 +831,9 @@ public class ChainTree {
 	 */
 	public void changeRotationAngle(int i, double a) {
 		CTNode nd = nodes[i];
+		
+		if (nd.isLocked) throw new IllegalArgumentException("You can't rotate a locked angle!");
+		
 		RotationMatrix4x4 matr = nodes[i].matr;
 		nd.a -= a;
 		double s = nd.s = Math.sin(nd.a);
@@ -1423,7 +1437,7 @@ public class ChainTree {
 	 * keeps rotating forever around one bond at a time
 	 */
 	public void rotate() {
-		double bestRMSD = 99999999.9;
+		double bestRMSD = 1;
 		if (rmsdMode == 1) { 
 			getDistanceMatrix();
 			bestRMSD = getPairwiseDistanceRMSD();
@@ -1433,12 +1447,13 @@ public class ChainTree {
 		CTNode nd;
 		Random rand = new Random(15);
 		int n, i, count = 0;
-		int size = 1;                            // maximum number of bonds that can be rotated in each iteration
+		int size = 10;  // maximum number of bonds that can be rotated in each iteration
 		if (rmsdMode == 1) size = 3;
 		boolean clashDetected;
-		int[] bond = new int[size];
+		int[] bond = new int[nodes.length*6];
 		double angle;
-		while (true) {
+		while (true) { 
+			//size = (int) ((nodes.length * (bestRMSD*bestRMSD))*6); // redefine to decrease with protein complexity
 			count++;
 			n = rand.nextInt(size) + 1;
 			clashDetected = false;
@@ -1452,10 +1467,10 @@ public class ChainTree {
 				else changeRotationAngle(bond[i], angle);
 				// detection of clashes is done after each dihedral rotation - clashDetectionMode = 0
 				if (clashDetectionMode == 0) {
-					long startTaskTime = System.nanoTime( );
+					//long startTaskTime = System.nanoTime( );
 					clashDetected = isClashing(bond[i]);
-					long taskTime  = System.nanoTime( ) - startTaskTime;
-					System.out.println("isClashing - Task  time " + startTaskTime + " " + taskTime);
+					//long taskTime  = System.nanoTime( ) - startTaskTime;
+					//System.out.println("isClashing - " + clashDetected + " - Task  time " + startTaskTime + " " + taskTime);
 					if (clashDetected) { restore(); i = n; }
 				}
 			}
@@ -1475,11 +1490,14 @@ public class ChainTree {
 				if (rmsd < bestRMSD)  {
 					bestRMSD = rmsd;
 					System.out.println(count + ". rmsd = " + bestRMSD + " improving rotation, n = " + n + ", 1. bond = " + bond[0] + 
-							           " dihedral RMSD = " + dihRMSD);
+							           " dihedral RMSD = " + dihRMSD + " size = " + size);
 					logBook.clear();
 					repaint();
 				}
-				else restore();
+				else {
+					//System.out.println(count + " Conformation rejected. bestRMSD = " + bestRMSD + " purposed RMSD = " + rmsd);
+					restore();
+				}
 			}
 		}
 	}
@@ -1519,9 +1537,15 @@ public class ChainTree {
 			}
 			nd.sphere = new Sphere3d(new Point3d(q), extension);
 			nd.cylinder = new Cylinder3d(new Point3d(p), new Point3d(q), 0.4f);
+			
+			if (this.alphaHelixNodes.contains(i)) clr = new Color(255, 255, 0, 80);
+			else if (this.betaSheetNodes.contains(i)) clr = new Color(0, 255, 0, 80);
+			
 			j3dg.addShape(nd.sphere, clr);
 			if (nd.isLocked) {
-				if (i % 3 == 0) j3dg.addShape(nd.cylinder,Color.cyan);
+				if (this.alphaHelixNodes.contains(i)) j3dg.addShape(nd.cylinder,new Color(255, 255, 0));
+				else if (this.betaSheetNodes.contains(i)) j3dg.addShape(nd.cylinder,new Color(0, 255, 0));
+				else if (i % 3 == 0) j3dg.addShape(nd.cylinder,Color.cyan);
 				else j3dg.addShape(nd.cylinder, Color.cyan); 
 			}
 			else j3dg.addShape(nd.cylinder);
@@ -1586,6 +1610,10 @@ public class ChainTree {
 				stack.push(nd.right);
 			}
 		}
+		
+		//j3dg.autoZoom();
+		//j3dg.toggleRotation();
+		//j3dg.centerCamera();
 	}
 
 
@@ -1619,6 +1647,8 @@ public class ChainTree {
 			}
 		}
 		j3dg.repaint();
+		//j3dg.autoZoom();
+		//j3dg.centerCamera();
 		//		j3dg.centerCamera();
 	}
 	
