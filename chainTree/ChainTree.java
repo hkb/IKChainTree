@@ -1509,7 +1509,7 @@ public class ChainTree {
 //		initPaint(0, 3);
 	}
 	public void initPaint(int low, int high) {
-		j3dg.removeAllShapes();
+		//j3dg.removeAllShapes();
 		j3dg.setBackgroundColor(Color.white);
 		CTNode nd;
 		Point3d q; 
