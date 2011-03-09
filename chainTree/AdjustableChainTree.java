@@ -31,20 +31,20 @@ public class AdjustableChainTree extends ChainTree {
 		this.nodes[0].isLocked = true;
 		
 		// lock secondary structures.
-		this.lockAlphaHelices(true);
-		this.lockBetaStrands(true);
+		super.lockAlphaHelices(true);
+		super.lockBetaStrands(true);
 		
 		// re-balance the tree
-		this.removeLockedSubtrees(true);
-		this.newRebalanceSubtree(this.root);
-		this.addLockedSubtrees(true);
+		super.removeLockedSubtrees(true);
+		super.newRebalanceSubtree(this.root);
+		super.addLockedSubtrees(true);
 		
 		// compute three bounding volume and energy.
-		this.createBoundingVolume(this.root);
-		this.createEnergyBoundingVolume(this.root);
+		super.createBoundingVolume(this.root);
+		super.createEnergyBoundingVolume(this.root);
 
 		// pre-compute distance matrix. <-- silly but avoids error
-		this.getDistanceMatrix();
+		super.getDistanceMatrix();
 		
 		// setup 3D display properties if specified.
 		if (scene != null) {
@@ -88,6 +88,41 @@ public class AdjustableChainTree extends ChainTree {
 	/* ----------------- PUBLIC METHODS ---------------- */
 	
 	/**
+	 * Rotates the i-th bond by the given angle.
+	 * 
+	 * @param i The index of the bond to rotate.
+	 * @param angle The angle to rotate the bond.
+	 */
+	public void changeRotationAngle(int i, double angle) {
+		if (this.nodes[i].isLocked) {
+			throw new IllegalArgumentException("You can't rotate a locked angle!");
+		}
+
+		super.changeRotationAngle(i, angle);
+	}
+	
+    /**
+     * Group the nodes between l and r (both included) into their own subtree.
+     * The root node of the tree is returned.
+     * 
+     * @param l The index of the leftmost node in the subtree.
+     * @param r The index of the rightmost node in the subtree.
+     * @return The root node of the grouped subtree. 
+     */
+    public CTNode group(int l, int r) {
+    	if (l <= r) {
+    		throw new IllegalArgumentException("Invalid subtree!");
+    	}
+    	
+    	// group subtree
+		CTNode nd = super.regroupLeft(this.nodes[l], r);
+		nd = super.regroupRight(this.nodes[r], l);
+
+		// re-balance regrouped subtree and return
+    	return super.newRebalanceSubtree(nd);
+    }
+	
+	/**
 	 * Unfolds a folded protein to some unfolded state.
 	 */
 	public void unfold() {
@@ -101,6 +136,7 @@ public class AdjustableChainTree extends ChainTree {
 	
 	/**
 	 * Returns the indices of the bonds that are not locked in sorted order.
+	 * 
 	 * @return A collection of indices of the bonds that are not locked.
 	 */
     public ArrayList<Integer> rotateableBonds() {
@@ -114,7 +150,7 @@ public class AdjustableChainTree extends ChainTree {
 		
     	return rotatableBonds;
     }
-
+    
     
     
 	/* ----------------- PRIVATE METHODS ---------------- */

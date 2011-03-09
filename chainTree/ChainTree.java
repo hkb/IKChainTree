@@ -176,7 +176,7 @@ public class ChainTree {
 		
 	}
 
-	private CTNode regroupLeft(CTNode nd, int r) {
+	protected CTNode regroupLeft(CTNode nd, int r) {
 		CTNode cND = nd;	
 		while (cND.high < r) {                           
 			//			System.out.print("lockleft: at node "); cND.toConsole(); 
@@ -196,7 +196,7 @@ public class ChainTree {
 	}
 
 
-	private CTNode regroupRight(CTNode nd, int l) {
+	protected CTNode regroupRight(CTNode nd, int l) {
 		CTNode cND = nd;
 		while (cND.low > l) {
 			//			System.out.print("lockright: at node "); cND.toConsole();
@@ -830,10 +830,7 @@ public class ChainTree {
 	 * matrices involving it are updated.
 	 */
 	public void changeRotationAngle(int i, double a) {
-		CTNode nd = nodes[i];
-		
-		if (nd.isLocked) throw new IllegalArgumentException("You can't rotate a locked angle!");
-		
+		CTNode nd = nodes[i];		
 		RotationMatrix4x4 matr = nodes[i].matr;
 		nd.a -= a;
 		double s = nd.s = Math.sin(nd.a);
