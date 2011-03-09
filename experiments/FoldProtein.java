@@ -30,21 +30,20 @@ public class FoldProtein {
 		 */			
 		// setup protein to simulate
 		J3DScene scene = J3DScene.createJ3DSceneInFrame();
-		scene.setWindowTitle(pdbId + " - simulation");
+		scene.setWindowTitle(pdbId + " - Loading...");
 		
 		AdjustableChainTree cTree = new AdjustableChainTree(pdbId, scene);
 		
 		try {
+			scene.setWindowTitle(pdbId + " - Target Structure");
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		// copy target into the scene of the chain tree
-		//new AdjustableChainTree(pdbId, scene);
-
 		// rum simulation
+		scene.setWindowTitle(pdbId + " - Folding Protein");
 		cTree.unfold();
 		foldProtein(cTree, errorTolerance);
 	}
