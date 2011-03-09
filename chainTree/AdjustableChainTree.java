@@ -23,37 +23,30 @@ public class AdjustableChainTree extends ChainTree {
 	public AdjustableChainTree(Protein protein, J3DScene scene) {
 		super(extractProteinPoints(protein), protein, true);
 
-		/*
-		 * Lock peptide planes and chain endpoints.
-		 */
+		// lock peptide planes
 		for (int i = 2; i < this.nodes.length; i = i+3) this.nodes[i].isLocked = true;
+		
+		// lock chain endpoints
 		this.nodes[this.nodes.length-1].isLocked = true;
 		this.nodes[0].isLocked = true;
 		
-		/*
-		 * Lock secondary structures.
-		 */
+		// lock secondary structures.
 		this.lockAlphaHelices(true);
 		this.lockBetaStrands(true);
 		
+		// re-balance the tree
 		this.removeLockedSubtrees(true);
 		this.newRebalanceSubtree(this.root);
 		this.addLockedSubtrees(true);
 		
-		/*
-		 * Compute three bounding volume and energy.
-		 */
+		// compute three bounding volume and energy.
 		this.createBoundingVolume(this.root);
 		this.createEnergyBoundingVolume(this.root);
 
-		/*
-		 * Pre-compute distance matrix. <-- silly but avoids error
-		 */
+		// pre-compute distance matrix. <-- silly but avoids error
 		this.getDistanceMatrix();
 		
-		/*
-		 * Setup 3D display properties if specified.
-		 */
+		// setup 3D display properties if specified.
 		if (scene != null) {
 			this.j3dg = scene;
 		    this.initPaint();
@@ -107,7 +100,7 @@ public class AdjustableChainTree extends ChainTree {
 	}
 	
 	/**
-	 * Returns the indices of the bonds that are not locked.
+	 * Returns the indices of the bonds that are not locked in sorted order.
 	 * @return A collection of indices of the bonds that are not locked.
 	 */
     public ArrayList<Integer> rotateableBonds() {
