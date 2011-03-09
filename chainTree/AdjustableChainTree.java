@@ -110,7 +110,7 @@ public class AdjustableChainTree extends ChainTree {
      * @return The root node of the grouped subtree. 
      */
     public CTNode group(int l, int r) {
-    	if (l <= r) {
+    	if (l > r) {
     		throw new IllegalArgumentException("Invalid subtree!");
     	}
     	
