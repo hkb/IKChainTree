@@ -2,7 +2,7 @@ package chainTree;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import geom3d.PointSet3d;
 import j3dScene.J3DScene;
@@ -139,7 +139,7 @@ public class AdjustableChainTree extends ChainTree {
 	 * 
 	 * @return A collection of indices of the bonds that are not locked.
 	 */
-    public ArrayList<Integer> rotateableBonds() {
+    public List<Integer> rotateableBonds() {
 		ArrayList<Integer> rotatableBonds = new ArrayList<Integer>();
 		
 		for (int i = 0, j = this.nodes.length; i < j; i++) { 

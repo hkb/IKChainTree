@@ -1,16 +1,9 @@
 package experiments;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 
 import j3dScene.J3DScene;
-import geom3d.PointSet3d;
-import geom3d.Shape3d;
-import chainTree.ChainTree;
 import chainTree.AdjustableChainTree;
-import molecule.Protein;
 
 /**
  * Folds a protein while showing the target structure.
@@ -58,7 +51,6 @@ public class FoldProtein {
 		double rmsdUpperBound = rmsd; // upper bound
 		int iterationsSinceLastImprovement = 0; // the number of iterations since the last improvement of the protein structure
 		errorTolerance++; // trick to go from semantic value to a computational more efficient value
-		int backboneLength = cTree.nodes.length; // length of the protein backbone
 		int bondToRotate; // the bond to rotate at a given simulation step
 
 		// stats
@@ -70,7 +62,7 @@ public class FoldProtein {
 
 		
 		// Detect rotatable bonds.
-		ArrayList<Integer> rotatableBonds = cTree.rotateableBonds();
+		List<Integer> rotatableBonds = cTree.rotateableBonds();
 		int rotatableBondsLength = rotatableBonds.size();
 		
 		/*
