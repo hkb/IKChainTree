@@ -106,8 +106,8 @@ public class ChainTree {
 		this.protein = protein;
 		this.peptidePlanes = peptidePlanes;
 
-		proteinDihedralAngles = protein.getDihedralAngles(); 
-		nrAtoms = points.getSize();  // number of bonds in the backbone
+		if (protein != null) proteinDihedralAngles = protein.getDihedralAngles(); 
+		nrAtoms = points.getSize();//points.getSize();  // number of bonds in the backbone
 		nrBonds = nrAtoms - 1;
 		System.out.println(nrBonds);
 		nodes = new CTNode[nrBonds];
@@ -1553,19 +1553,22 @@ public class ChainTree {
 		SideChain sideChain;
 		Carbon Ca;
 		char symbol;
-		for (int i = 0; i < protein.getNumberAminoAcids(); i++) {
-			aminoAcid = protein.getAminoAcid(i);
-			Ca = aminoAcid.getCa();
-			sideChain = aminoAcid.getSideChain();
-			System.out.print(aminoAcid.getSymbol());
-			symbol = aminoAcid.getSymbol();
-			if ((symbol == 'A') || (symbol == 'C') || (symbol == 'D') || (symbol == 'E') || (symbol == 'F') ||
-				(symbol == 'H') || (symbol == 'I') || (symbol == 'K') || (symbol == 'L') || (symbol == 'M') || 
-				(symbol == 'N') || (symbol == 'P') || (symbol == 'R') || (symbol == 'S') || (symbol == 'Y') ||
-				(symbol == 'T') || (symbol == 'V') || (symbol == 'W') || (symbol == 'Q'))  {
-//				sideChain.draw(j3dg, this, 3*i+1, Ca);
+		
+		if (protein != null) {
+			for (int i = 0; i < protein.getNumberAminoAcids(); i++) {
+				aminoAcid = protein.getAminoAcid(i);
+				Ca = aminoAcid.getCa();
+				sideChain = aminoAcid.getSideChain();
+				System.out.print(aminoAcid.getSymbol());
+				symbol = aminoAcid.getSymbol();
+				if ((symbol == 'A') || (symbol == 'C') || (symbol == 'D') || (symbol == 'E') || (symbol == 'F') ||
+					(symbol == 'H') || (symbol == 'I') || (symbol == 'K') || (symbol == 'L') || (symbol == 'M') || 
+					(symbol == 'N') || (symbol == 'P') || (symbol == 'R') || (symbol == 'S') || (symbol == 'Y') ||
+					(symbol == 'T') || (symbol == 'V') || (symbol == 'W') || (symbol == 'Q'))  {
+	//				sideChain.draw(j3dg, this, 3*i+1, Ca);
+				}
+				
 			}
-			
 		}
 		
 //		Point3d z;
