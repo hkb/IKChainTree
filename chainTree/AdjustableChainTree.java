@@ -10,6 +10,7 @@ import molecule.Protein;
 
 /**
  * An Adjustable ChainTree is a data structure with locked secondary structures.
+ * 
  * @author hkb
  */
 public class AdjustableChainTree extends ChainTree {
@@ -42,7 +43,7 @@ public class AdjustableChainTree extends ChainTree {
 		// compute three bounding volume and energy.
 		super.createBoundingVolume(this.root);
 		super.createEnergyBoundingVolume(this.root);
-
+		
 		// pre-compute distance matrix. <-- silly but avoids error
 		super.getDistanceMatrix();
 		
@@ -83,9 +84,45 @@ public class AdjustableChainTree extends ChainTree {
 		this(pdbId, null);
 	}
 	
+	/**
+	 * Creates a new adjustable chain tree for a given set of points.
+	 * 
+	 * @param points The points to create the tree from.
+	 */
+	public AdjustableChainTree(PointSet3d points) {
+		super(points, null, false);
+		
+		// compute three bounding volume and energy.
+		super.createBoundingVolume(this.root);
+		super.createEnergyBoundingVolume(this.root);
+		
+		// pre-compute distance matrix. <-- silly but avoids error
+		super.getDistanceMatrix();
+	}
+	
 	
 	
 	/* ----------------- PUBLIC METHODS ---------------- */
+	
+	/**
+	 * Creates a new adjustable chain tree for a given part of the
+	 * protein backbone.
+	 * 
+	 * @param l The index of the leftmost bond.
+	 * @param r The index of the rightmost bond.
+	 */
+	public AdjustableChainTree subtree(int l, int r) {
+		CTNode subtree = this.group(l, r);
+		
+		AdjustableChainTree cTree = new AdjustableChainTree(this.getPoints(subtree));
+		
+		// preserve locked bonds in the subtree
+		for (int i = l, j = 0; i < r; i++, j++) {
+			cTree.nodes[j].isLocked = this.nodes[i].isLocked; 
+		}
+		
+		return cTree;
+	}
 	
 	/**
 	 * Rotates the i-th bond by the given angle.
@@ -101,35 +138,19 @@ public class AdjustableChainTree extends ChainTree {
 		super.changeRotationAngle(i, angle);
 	}
 	
-    /**
-     * Group the nodes between l and r (both included) into their own subtree.
-     * The root node of the tree is returned.
-     * 
-     * @param l The index of the leftmost node in the subtree.
-     * @param r The index of the rightmost node in the subtree.
-     * @return The root node of the grouped subtree. 
-     */
-    public CTNode group(int l, int r) {
-    	if (l > r) {
-    		throw new IllegalArgumentException("Invalid subtree!");
-    	}
-    	
-    	// group subtree
-		CTNode nd = super.regroupLeft(this.nodes[l], r);
-		nd = super.regroupRight(this.nodes[r], l);
-
-		// re-balance regrouped subtree and return
-    	return super.newRebalanceSubtree(nd);
-    }
-	
 	/**
 	 * Unfolds a folded protein to some unfolded state.
 	 */
 	public void unfold() {
 		for (int i = 1, j = this.nodes.length-1; i < j; i++) {
 			if (!this.nodes[i].isLocked) { 
-				// if bound is not locked then obfuscate
-				this.changeRotationAngle(i, -this.getDihedralAngle(i));
+				if (this.protein != null) {
+					// if protein then invert the dihedral angle
+					this.changeRotationAngle(i, -this.getDihedralAngle(i));
+				} else {
+					// else pick a random angle
+					this.changeRotationAngle(i, (Math.random() * Math.PI));
+				}
 			}
 		}
 	}
@@ -154,6 +175,27 @@ public class AdjustableChainTree extends ChainTree {
     
     
 	/* ----------------- PRIVATE METHODS ---------------- */
+
+    /**
+     * Group the nodes between l and r (both included) into their own subtree.
+     * The root node of the tree is returned.
+     * 
+     * @param l The index of the leftmost node in the subtree.
+     * @param r The index of the rightmost node in the subtree.
+     * @return The root node of the grouped subtree. 
+     */
+    private CTNode group(int l, int r) {
+    	if (l > r) {
+    		throw new IllegalArgumentException("Invalid subtree!");
+    	}
+    	
+    	// group subtree
+		CTNode nd = super.regroupLeft(this.nodes[l], r);
+		nd = super.regroupRight(this.nodes[r], l);
+
+		// re-balance regrouped subtree and return
+    	return super.newRebalanceSubtree(nd);
+    }
     
 	/**
 	 * Returns a set of the points in the protein.
@@ -170,5 +212,4 @@ public class AdjustableChainTree extends ChainTree {
 		for (int i = 0; i < allPoints.getSize(); i++) points.insert(allPoints.get(i));
 		return points;
 	}
-	
 }
